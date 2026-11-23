@@ -130,6 +130,25 @@ export async function seed() {
     [member.insertId, 'Welcome to Joy Ministries', 'Download the app to stay connected with the family.']
   );
 
+  /* What the app offers as giving purposes. The office adds to this list from
+     the console, and the pills in the app follow automatically. */
+  const funds = [
+    ['Tithe', 'tithe', 'tithe', 'The regular tithe that keeps the house running.', null, 1],
+    ['Offering', 'offering', 'offering', 'A gift beyond the tithe, given in the service.', null, 2],
+    ['Missions', 'missions', 'project', 'Sending and supporting the work beyond Lambton.', null, 3],
+    ['Building Fund', 'building', 'project', 'Upkeep and improvement of the church buildings.', null, 4],
+    ['Welfare', 'welfare', 'charity', 'Food parcels, funeral support, and families in need.', null, 5],
+    ['New Building', 'new-building', 'project', 'Ground and building costs for the new sanctuary.', 2500000, 6],
+  ];
+  for (const [name, slug, kind, blurb, goal, order] of funds) {
+    await q(
+      `INSERT INTO giving_funds (name, slug, kind, blurb, goal_amount, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE name = VALUES(name)`,
+      [name, slug, kind, blurb, goal, order]
+    );
+  }
+
   const settings = [
     ['payfast_merchant_id', '10010868'],
     ['payfast_merchant_key', 'exnibu0q9zmuz'],

@@ -319,6 +319,24 @@ CREATE TABLE IF NOT EXISTS user_growth (
 -- ---------------------------------------------------------------------
 -- Money (giving) + PayFast
 -- ---------------------------------------------------------------------
+
+-- What a giver can give towards. The office adds rows here and they appear
+-- as pills in the app; donations.fund stores the slug.
+CREATE TABLE IF NOT EXISTS giving_funds (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name        VARCHAR(80) NOT NULL,
+  slug        VARCHAR(80) NOT NULL,
+  blurb       VARCHAR(190) DEFAULT NULL,
+  kind        ENUM('tithe','offering','project','charity') NOT NULL DEFAULT 'project',
+  goal_amount DECIMAL(12,2) DEFAULT NULL,
+  is_active   TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order  INT NOT NULL DEFAULT 0,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_giving_funds_slug (slug),
+  KEY idx_giving_funds_active (is_active, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS donations (
   id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
   donor_id       INT UNSIGNED DEFAULT NULL,

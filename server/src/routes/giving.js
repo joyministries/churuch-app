@@ -8,13 +8,42 @@ import { loadPayfastSettings, isConfigured } from '../services/payfast.js';
 
 const router = Router();
 
-const FUNDS = new Set(['tithe', 'offering', 'missions', 'building', 'welfare']);
+/**
+ * Giving purposes live in `giving_funds` so the office can add one (a new
+ * building, a charity drive) without a code change. Anything the client sends
+ * is checked against that table; unknown or retired slugs fall back to the tithe
+ * so a stale app build can never write a fund nobody can account for.
+ */
+async function resolveFund(input) {
+  const slug = String(input ?? '').trim().toLowerCase();
+  if (slug) {
+    const row = await one(
+      'SELECT slug FROM giving_funds WHERE slug = ? AND is_active = 1 LIMIT 1',
+      [slug]
+    );
+    if (row) return row.slug;
+  }
+  return 'tithe';
+}
 
 function reference() {
   const stamp = Date.now().toString(36).toUpperCase();
   const salt = randomBytes(3).toString('hex').toUpperCase();
   return `JM-${stamp}-${salt}`;
 }
+
+/** The pills the app shows under "Fund". Public: no account needed to give. */
+router.get('/funds', async (req, res, next) => {
+  try {
+    const rows = await q(
+      `SELECT id, name, slug, blurb, kind, goal_amount, sort_order
+         FROM giving_funds WHERE is_active = 1 ORDER BY sort_order, id`
+    );
+    return res.json(rows);
+  } catch (err) {
+    return next(err);
+  }
+});
 
 /** Donor's own giving history. */
 router.get('/', authenticate, async (req, res, next) => {
@@ -36,7 +65,7 @@ router.post('/', authenticate, requireStaff, audit('giving.manual', (req) => `gi
     const amount = Number(req.body?.amount);
     if (!(amount > 0)) return res.status(400).json({ error: 'Valid amount required.' });
     const method = ['card', 'eft', 'cash'].includes(req.body?.method) ? req.body.method : 'cash';
-    const fund = FUNDS.has(String(req.body?.fund)) ? String(req.body.fund) : 'tithe';
+    const fund = await resolveFund(req.body?.fund);
     const ref = req.body?.reference ? String(req.body.reference) : reference();
 
     const result = await q(
@@ -99,7 +128,7 @@ router.post('/payfast', optionalAuth, audit('giving.payfast.initiate', (req) => 
       return res.status(503).json({ error: 'PayFast is not configured yet. Please give at the office.' });
     }
 
-    const fund = FUNDS.has(String(req.body?.fund)) ? String(req.body.fund) : 'tithe';
+    const fund = await resolveFund(req.body?.fund);
     const ref = reference();
     const donorName = typeof req.body?.donor_name === 'string' ? req.body.donor_name.trim() : null;
     const donorEmail = typeof req.body?.donor_email === 'string' ? req.body.donor_email.trim() : null;

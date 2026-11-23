@@ -1,14 +1,147 @@
 <%- include('partials/top', { title, me, flash }) %>
+<%
+  const fundName = (slug) => (funds.find((f) => f.slug === slug) || {}).name || slug;
+  const money = (n) => 'R ' + Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+%>
 <h1>Giving</h1>
-<h2>Totals</h2>
-<table><tr><th>Fund</th><th>Status</th><th>Count</th><th>Total</th></tr>
-<% totals.forEach(t=>{ %><tr><td><%= t.fund %></td><td><%= t.status %></td><td><%= t.c %></td><td>R <%= Number(t.t).toFixed(2) %></td></tr><% }) %>
+<p class="sub">What the church has received, and what people can give towards.</p>
+
+<h2>Contribution purposes</h2>
+<p class="muted" style="margin:-2px 0 8px">
+  These are the pills a giver picks between in the app. Add one and it appears there
+  immediately — no release needed.
+</p>
+
+<table>
+  <tr>
+    <th style="width:34%">Purpose</th>
+    <th>Type</th>
+    <th>Goal</th>
+    <th>Raised</th>
+    <th>Live</th>
+    <th style="width:120px"></th>
+  </tr>
+  <% funds.forEach((f) => { const r = raisedByFund[f.slug]; %>
+    <tr>
+      <td>
+        <form id="f<%= f.id %>" method="post" action="/admin/giving/funds/<%= f.id %>"></form>
+        <input form="f<%= f.id %>" name="name" value="<%= f.name %>" maxlength="80"
+               style="max-width:220px;font-weight:500">
+        <div class="muted" style="margin-top:3px">
+          <code style="font-size:11px"><%= f.slug %></code>
+          <input form="f<%= f.id %>" name="blurb" value="<%= f.blurb || '' %>" maxlength="190"
+                 placeholder="One line under the pill"
+                 style="margin-top:4px;font-size:11.5px">
+          <input form="f<%= f.id %>" type="hidden" name="sort_order" value="<%= f.sort_order %>">
+        </div>
+      </td>
+      <td>
+        <select form="f<%= f.id %>" name="kind" style="width:auto">
+          <option value="tithe" <%= f.kind === 'tithe' ? 'selected' : '' %>>Tithe</option>
+          <option value="offering" <%= f.kind === 'offering' ? 'selected' : '' %>>Offering</option>
+          <option value="project" <%= f.kind === 'project' ? 'selected' : '' %>>Project</option>
+          <option value="charity" <%= f.kind === 'charity' ? 'selected' : '' %>>Charity</option>
+        </select>
+      </td>
+      <td>
+        <input form="f<%= f.id %>" name="goal_amount" type="number" min="0" step="0.01"
+               value="<%= f.goal_amount ?? '' %>" placeholder="—" style="width:110px">
+      </td>
+      <td>
+        <%= money(r ? r.total : 0) %>
+        <div class="muted" style="font-size:11px"><%= r ? r.gifts : 0 %> gift(s)</div>
+      </td>
+      <td>
+        <label style="margin:0;display:flex;align-items:center;gap:6px;color:inherit;font-size:12px">
+          <input form="f<%= f.id %>" type="checkbox" name="is_active" value="1"
+                 <%= f.is_active ? 'checked' : '' %> style="width:auto;margin:0">
+          <%= f.is_active ? 'Live' : 'Hidden' %>
+        </label>
+      </td>
+      <td>
+        <div class="row" style="gap:6px">
+          <button form="f<%= f.id %>" style="padding:4px 9px;font-size:11.5px">Save</button>
+          <form id="d<%= f.id %>" method="post" action="/admin/giving/funds/<%= f.id %>/delete"
+                onsubmit="return confirm('Remove this purpose from the giving list?')">
+          </form>
+          <button form="d<%= f.id %>" class="btn-danger" style="padding:4px 9px;font-size:11.5px">Remove</button>
+        </div>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!funds.length) { %>
+    <tr><td colspan="6" class="muted">No purposes yet. Add the first one below.</td></tr>
+  <% } %>
 </table>
+
+<h2>Add a purpose</h2>
+<form method="post" action="/admin/giving/funds" class="card">
+  <div class="row">
+    <div class="grow">
+      <label for="fund-name">Name</label>
+      <input id="fund-name" name="name" placeholder="New Building" required maxlength="80">
+    </div>
+    <div class="grow">
+      <label for="fund-kind">Type</label>
+      <select id="fund-kind" name="kind">
+        <option value="project">Project / drive</option>
+        <option value="charity">Charity</option>
+        <option value="offering">Offering</option>
+        <option value="tithe">Tithe</option>
+      </select>
+    </div>
+    <div class="grow">
+      <label for="fund-goal">Goal in rand (optional)</label>
+      <input id="fund-goal" name="goal_amount" type="number" min="0" step="0.01" placeholder="2500000">
+    </div>
+    <div class="grow">
+      <label for="fund-order">Position</label>
+      <input id="fund-order" name="sort_order" type="number" value="10">
+    </div>
+  </div>
+  <label for="fund-blurb">One line under the pill</label>
+  <input id="fund-blurb" name="blurb" maxlength="190"
+         placeholder="Ground and building costs for the new sanctuary.">
+  <div class="row" style="margin-top:12px">
+    <button type="submit">Add purpose</button>
+  </div>
+</form>
+
+<h2>Totals by purpose</h2>
+<table>
+  <tr><th>Purpose</th><th>Status</th><th>Count</th><th>Total</th></tr>
+  <% totals.forEach((t) => { %>
+    <tr>
+      <td><%= fundName(t.fund) %></td>
+      <td><span class="pill <%= t.status === 'completed' ? 'ok' : t.status === 'pending' ? 'warn' : 'bad' %>"><%= t.status %></span></td>
+      <td><%= t.c %></td>
+      <td><%= money(t.t) %></td>
+    </tr>
+  <% }) %>
+  <% if (!totals.length) { %><tr><td colspan="4" class="muted">Nothing recorded yet.</td></tr><% } %>
+</table>
+
 <h2>Recent donations</h2>
-<table><tr><th>Ref</th><th>Fund</th><th>Amount</th><th>Status</th><th>Donor</th><th>Action</th></tr>
-<% donations.forEach(d=>{ %><tr>
-<td><%= d.reference %></td><td><%= d.fund %></td><td>R <%= Number(d.amount).toFixed(2) %></td><td><%= d.status %></td><td><%= d.donor_name %></td>
-<td><form method="post" action="/admin/giving/settle" class="row"><input type="hidden" name="reference" value="<%= d.reference %>"><select name="status"><option>completed</option><option>failed</option><option>cancelled</option><option>refunded</option></select><button class="btn-secondary">Set</button></form></td>
-</tr><% }) %>
+<table>
+  <tr><th>Ref</th><th>Purpose</th><th>Amount</th><th>Status</th><th>Donor</th><th>Action</th></tr>
+  <% donations.forEach((d) => { %>
+    <tr>
+      <td><%= d.reference %></td>
+      <td><%= fundName(d.fund) %></td>
+      <td><%= money(d.amount) %></td>
+      <td><span class="pill <%= d.status === 'completed' ? 'ok' : d.status === 'pending' ? 'warn' : 'bad' %>"><%= d.status %></span></td>
+      <td><%= d.donor_name || '—' %></td>
+      <td>
+        <form method="post" action="/admin/giving/settle" class="row" style="gap:6px">
+          <input type="hidden" name="reference" value="<%= d.reference %>">
+          <select name="status" style="width:auto">
+            <option>completed</option><option>failed</option><option>cancelled</option><option>refunded</option>
+          </select>
+          <button class="btn-secondary" style="padding:4px 9px;font-size:11.5px">Set</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!donations.length) { %><tr><td colspan="6" class="muted">No donations yet.</td></tr><% } %>
 </table>
 <%- include('partials/bottom') %>

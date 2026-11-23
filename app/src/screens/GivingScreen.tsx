@@ -17,7 +17,22 @@ import { brand } from '../lib/brand';
 
 const { palette, spacing, typeScale, radius, fonts } = theme;
 
-const FUNDS = ['Tithe', 'Offering', 'Missions', 'Building'];
+type GivingFund = {
+  id: number;
+  name: string;
+  slug: string;
+  blurb?: string | null;
+  kind?: string;
+  goal_amount?: string | null;
+};
+
+/** Used only until the office's list arrives, or when the phone is offline. */
+const DEFAULT_FUNDS: GivingFund[] = [
+  { id: 0, name: 'Tithe', slug: 'tithe' },
+  { id: 0, name: 'Offering', slug: 'offering' },
+  { id: 0, name: 'Missions', slug: 'missions' },
+  { id: 0, name: 'Building', slug: 'building' },
+];
 
 function money(digits: string) {
   const n = Number(digits);
@@ -27,8 +42,9 @@ function money(digits: string) {
 
 export default function GivingScreen() {
   const [history, setHistory] = useState<any[]>([]);
+  const [funds, setFunds] = useState<GivingFund[]>(DEFAULT_FUNDS);
   const [amount, setAmount] = useState('');
-  const [fund, setFund] = useState('Tithe');
+  const [fund, setFund] = useState('tithe');
   const [reference, setReference] = useState('');
   const [recurring, setRecurring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -38,6 +54,15 @@ export default function GivingScreen() {
   const load = async () => {
     try {
       setHistory(await api<any[]>('/giving'));
+    } catch {}
+
+    try {
+      // The office controls this list, so a new drive shows up without a release.
+      const list = await api<GivingFund[]>('/giving/funds');
+      if (Array.isArray(list) && list.length) {
+        setFunds(list);
+        setFund((current) => (list.some((f) => f.slug === current) ? current : list[0].slug));
+      }
     } catch {}
   };
 
@@ -50,6 +75,10 @@ export default function GivingScreen() {
     await load();
     setRefreshing(false);
   };
+
+  const fundLabel = funds.find((f) => f.slug === fund)?.name ?? 'Tithe';
+  const fundName = (slug?: string) =>
+    funds.find((f) => f.slug === slug)?.name ?? (slug ? slug.replace(/-/g, ' ') : 'Gift');
 
   const submit = async () => {
     const value = Number(amount);
@@ -65,7 +94,7 @@ export default function GivingScreen() {
         method: 'POST',
         body: {
           amount: value,
-          fund: fund.toLowerCase(),
+          fund,
           reference: reference || undefined,
         },
       });
@@ -105,13 +134,15 @@ export default function GivingScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.fundRow}
         >
-          {FUNDS.map((f) => {
-            const active = fund === f;
+          {funds.map((f) => {
+            const active = fund === f.slug;
             return (
               <Pressable
-                key={f}
-                onPress={() => setFund(f)}
+                key={f.slug}
+                onPress={() => setFund(f.slug)}
                 accessibilityRole="button"
+                accessibilityLabel={f.name}
+                accessibilityHint={f.blurb ?? undefined}
                 accessibilityState={{ selected: active }}
                 style={({ pressed }) => [
                   styles.fundBtn,
@@ -119,7 +150,7 @@ export default function GivingScreen() {
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={[styles.fundLabel, active && styles.fundLabelActive]}>{f}</Text>
+                <Text style={[styles.fundLabel, active && styles.fundLabelActive]}>{f.name}</Text>
               </Pressable>
             );
           })}
@@ -146,7 +177,7 @@ export default function GivingScreen() {
           <View style={styles.amountRule} />
 
           <Text style={styles.amountHint}>
-            {amount ? `${fund} · R ${money(amount)}` : 'Type the amount you want to give'}
+            {amount ? `${fundLabel} · R ${money(amount)}` : 'Type the amount you want to give'}
           </Text>
         </View>
 
@@ -200,7 +231,7 @@ export default function GivingScreen() {
                     <Ionicons name="arrow-up" size={14} color={palette.positive} />
                   </View>
                   <View style={styles.historyText}>
-                    <Text style={styles.historyTitle}>{g.fund ?? 'Gift'}</Text>
+                    <Text style={styles.historyTitle}>{fundName(g.fund)}</Text>
                     <Text style={styles.historyMeta}>
                       {g.status ?? 'pending'}
                       {g.created_at ? ` · ${String(g.created_at).slice(0, 10)}` : ''}

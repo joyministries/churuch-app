@@ -344,9 +344,126 @@ router.get('/giving', requireLogin, requireStaffWeb, async (req, res, next) => {
   try {
     const donations = await q('SELECT * FROM donations ORDER BY id DESC LIMIT 100');
     const totals = await q("SELECT fund,status,COUNT(*) c,COALESCE(SUM(amount),0) t FROM donations GROUP BY fund,status ORDER BY fund,status");
-    res.render('giving', { title: 'Giving', donations, totals });
+    const funds = await q('SELECT * FROM giving_funds ORDER BY sort_order, id');
+    const raised = await q(
+      "SELECT fund, COALESCE(SUM(amount),0) AS total, COUNT(*) AS gifts FROM donations WHERE status='completed' GROUP BY fund"
+    );
+    const raisedByFund = Object.fromEntries(raised.map((r) => [r.fund, r]));
+    res.render('giving', { title: 'Giving', donations, totals, funds, raisedByFund });
   } catch (err) {
     return next(err);
+  }
+});
+
+/* ---- giving purposes -------------------------------------------------
+   The pills in the app come from this table, so adding a drive is a form
+   submission rather than a release. Slugs are generated once and never
+   change, because donations store the slug, not the id. */
+
+function fundSlug(input) {
+  return (
+    String(input || '')
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'fund'
+  );
+}
+
+router.post('/giving/funds', requireLogin, requireStaffWeb, async (req, res, next) => {
+  try {
+    const name = String(req.body?.name || '').trim();
+    if (!name) throw new Error('Give the purpose a name first.');
+
+    let slug = fundSlug(req.body?.slug || name);
+    if (await one('SELECT id FROM giving_funds WHERE slug = ?', [slug])) {
+      slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+    }
+
+    const kind = ['tithe', 'offering', 'project', 'charity'].includes(req.body?.kind)
+      ? req.body.kind
+      : 'project';
+    const goal = Number(req.body?.goal_amount);
+    const sort = Number(req.body?.sort_order);
+
+    await q(
+      `INSERT INTO giving_funds (name, slug, kind, blurb, goal_amount, sort_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, 1)`,
+      [
+        name.slice(0, 80),
+        slug,
+        kind,
+        String(req.body?.blurb || '').trim().slice(0, 190) || null,
+        Number.isFinite(goal) && goal > 0 ? goal : null,
+        Number.isFinite(sort) ? sort : 0,
+      ]
+    );
+    setFlash(req, 'success', `“${name}” is now a giving purpose, and it is live in the app.`);
+    res.redirect('/admin/giving');
+  } catch (err) {
+    setFlash(req, 'error', err.message);
+    res.redirect('/admin/giving');
+  }
+});
+
+router.post('/giving/funds/:id', requireLogin, requireStaffWeb, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) throw new Error('Unknown purpose.');
+
+    const name = String(req.body?.name || '').trim();
+    if (!name) throw new Error('A purpose needs a name.');
+
+    const kind = ['tithe', 'offering', 'project', 'charity'].includes(req.body?.kind)
+      ? req.body.kind
+      : 'project';
+    const goal = Number(req.body?.goal_amount);
+    const sort = Number(req.body?.sort_order);
+
+    await q(
+      `UPDATE giving_funds
+          SET name = ?, kind = ?, blurb = ?, goal_amount = ?, sort_order = ?, is_active = ?
+        WHERE id = ?`,
+      [
+        name.slice(0, 80),
+        kind,
+        String(req.body?.blurb || '').trim().slice(0, 190) || null,
+        Number.isFinite(goal) && goal > 0 ? goal : null,
+        Number.isFinite(sort) ? sort : 0,
+        req.body?.is_active ? 1 : 0,
+        id,
+      ]
+    );
+    setFlash(req, 'success', 'Purpose updated.');
+    res.redirect('/admin/giving');
+  } catch (err) {
+    setFlash(req, 'error', err.message);
+    res.redirect('/admin/giving');
+  }
+});
+
+router.post('/giving/funds/:id/delete', requireLogin, requireStaffWeb, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) throw new Error('Unknown purpose.');
+
+    const fund = await one('SELECT * FROM giving_funds WHERE id = ?', [id]);
+    if (!fund) throw new Error('That purpose is already gone.');
+
+    const used = await one('SELECT COUNT(*) AS c FROM donations WHERE fund = ?', [fund.slug]);
+    if (used?.c) {
+      /* History must keep its label, so a used purpose is retired, not erased. */
+      await q('UPDATE giving_funds SET is_active = 0 WHERE id = ?', [id]);
+      setFlash(req, 'success', `“${fund.name}” has ${used.c} gift(s) on record, so it was hidden instead of deleted.`);
+    } else {
+      await q('DELETE FROM giving_funds WHERE id = ?', [id]);
+      setFlash(req, 'success', `“${fund.name}” removed.`);
+    }
+    res.redirect('/admin/giving');
+  } catch (err) {
+    setFlash(req, 'error', err.message);
+    res.redirect('/admin/giving');
   }
 });
 
