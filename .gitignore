@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment — never commit real credentials; .env.example documents the keys
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+web-build/
+.expo/
+.expo-shared/
+
+# Uploaded files (user content lives on the server, not in git)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs and local junk
+*.log
+.DS_Store
+.tmp/
