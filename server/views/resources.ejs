@@ -1,0 +1,19 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Library / resources</h1>
+<form method="post" action="/admin/resources" class="card">
+  <div class="row">
+    <div style="flex:2"><label>Title</label><input name="title" required></div>
+    <div><label>Kind</label><select name="kind"><option>book</option><option>guide</option><option>study</option><option>form</option><option>audio</option><option>video</option></select></div>
+    <div><label>Format</label><input name="format" placeholder="PDF"></div>
+  </div>
+  <div class="row">
+    <div style="flex:1"><label>Ministry</label><select name="ministry_id"><option value="">Church-wide</option><% ministries.forEach(m=>{ %><option value="<%= m.id %>"><%= m.name %></option><% }) %></select></div>
+    <div style="flex:2"><label>File URL</label><input name="file_url"></div>
+  </div>
+  <label>Description</label><textarea name="description" rows="2"></textarea>
+  <button style="margin-top:10px">Add resource</button>
+</form>
+<table><tr><th>ID</th><th>Title</th><th>Kind</th><th>Ministry</th><th>File</th></tr>
+<% items.forEach(r=>{ %><tr><td><%= r.id %></td><td><%= r.title %></td><td><%= r.kind %></td><td><%= r.ministry_name %></td><td><a href="<%= r.file_url %>">open</a></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

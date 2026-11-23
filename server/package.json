@@ -1,0 +1,26 @@
+{
+  "name": "church-app-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/db/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-flash": "^0.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.10",
+    "ejs": "^7.0.2",
+    "express": "^4.19.2",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "jose": "^5.9.6",
+    "morgan": "^1.10.0",
+    "multer": "^2.5.0",
+    "mysql2": "^3.24.6",
+    "zod": "^3.23.8"
+  }
+}

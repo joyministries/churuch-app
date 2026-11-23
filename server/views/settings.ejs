@@ -1,0 +1,16 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Settings</h1>
+<form method="post" action="/admin/settings" class="card">
+  <p class="muted">PayFast keys, mode and other site settings. Empty passphrase is fine for sandbox.</p>
+  <% const get=(k)=>{const r=items.find(i=>i.key_name===k);return r?r.value:''} %>
+  <label>payfast_merchant_id</label><input name="payfast_merchant_id" value="<%= get('payfast_merchant_id') %>">
+  <label>payfast_merchant_key</label><input name="payfast_merchant_key" value="<%= get('payfast_merchant_key') %>">
+  <label>payfast_passphrase</label><input name="payfast_passphrase" value="<%= get('payfast_passphrase') %>">
+  <label>payfast_mode (sandbox/live)</label><input name="payfast_mode" value="<%= get('payfast_mode') || 'sandbox' %>">
+  <label>payfast_enabled (1/0)</label><input name="payfast_enabled" value="<%= get('payfast_enabled') || '1' %>">
+  <button style="margin-top:10px">Save settings</button>
+</form>
+<table><tr><th>Key</th><th>Value</th><th>Updated</th></tr>
+<% items.forEach(i=>{ %><tr><td><%= i.key_name %></td><td><%= i.value %></td><td><%= i.updated_at %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

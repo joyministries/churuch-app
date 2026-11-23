@@ -1,0 +1,26 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Users</h1>
+<form method="post" action="/admin/users" class="card">
+  <div class="row">
+    <div style="flex:1"><label>Name</label><input name="name" required></div>
+    <div style="flex:1"><label>Email</label><input name="email" type="email"></div>
+    <div style="flex:1"><label>Password</label><input name="password" required></div>
+    <div><label>Role</label><select name="role"><option>member</option><option>leader</option><option>ministry_admin</option><option>admin</option></select></div>
+  </div>
+  <button style="margin-top:10px">Create user</button>
+</form>
+<table><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Ministries</th><th>Grant access</th></tr>
+<% users.forEach(u=>{ %>
+<tr>
+<td><%= u.id %></td><td><%= u.name %></td><td><%= u.email %></td><td><span class="pill"><%= u.role %></span></td>
+<td><% (u.grants||[]).forEach(g=>{ %><span class="pill"><%= g.ministry_name %> (<%= g.role %>)</span> <% }) %></td>
+<td>
+<form method="post" action="/admin/users/<%= u.id %>/grant" class="row">
+  <select name="ministry_id"><% ministries.forEach(m=>{ %><option value="<%= m.id %>"><%= m.name %></option><% }) %></select>
+  <select name="role"><option value="member">member</option><option value="admin">admin</option></select>
+  <button class="btn-secondary">Grant</button>
+</form>
+</td>
+</tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

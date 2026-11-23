@@ -1,0 +1,29 @@
+{
+  "name": "Joy Ministries",
+  "slug": "joy-ministries",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "scheme": "joyministries",
+  "userInterfaceStyle": "light",
+  "newArchEnabled": true,
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "co.za.joyministries.app"
+  },
+  "android": {
+    "package": "co.za.joyministries.app",
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/adaptive-icon.png",
+      "backgroundColor": "#2B97C5"
+    }
+  },
+  "web": {
+    "bundler": "metro",
+    "output": "static"
+  },
+  "plugins": [
+    "expo-notifications",
+    "expo-asset"
+  ],
+  "icon": "./assets/icon.png"
+}

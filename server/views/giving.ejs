@@ -1,0 +1,14 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Giving</h1>
+<h2>Totals</h2>
+<table><tr><th>Fund</th><th>Status</th><th>Count</th><th>Total</th></tr>
+<% totals.forEach(t=>{ %><tr><td><%= t.fund %></td><td><%= t.status %></td><td><%= t.c %></td><td>R <%= Number(t.t).toFixed(2) %></td></tr><% }) %>
+</table>
+<h2>Recent donations</h2>
+<table><tr><th>Ref</th><th>Fund</th><th>Amount</th><th>Status</th><th>Donor</th><th>Action</th></tr>
+<% donations.forEach(d=>{ %><tr>
+<td><%= d.reference %></td><td><%= d.fund %></td><td>R <%= Number(d.amount).toFixed(2) %></td><td><%= d.status %></td><td><%= d.donor_name %></td>
+<td><form method="post" action="/admin/giving/settle" class="row"><input type="hidden" name="reference" value="<%= d.reference %>"><select name="status"><option>completed</option><option>failed</option><option>cancelled</option><option>refunded</option></select><button class="btn-secondary">Set</button></form></td>
+</tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

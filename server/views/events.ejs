@@ -1,0 +1,20 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Events</h1>
+<form method="post" action="/admin/events" class="card">
+  <div class="row">
+    <div style="flex:2"><label>Title</label><input name="title" required></div>
+    <div><label>Ministry</label><select name="ministry_id"><option value="">Church-wide</option><% ministries.forEach(m=>{ %><option value="<%= m.id %>"><%= m.name %></option><% }) %></select></div>
+  </div>
+  <label>Description</label><textarea name="description" rows="2"></textarea>
+  <div class="row">
+    <div style="flex:1"><label>Starts</label><input name="starts_at" type="datetime-local" required></div>
+    <div style="flex:1"><label>Ends</label><input name="ends_at" type="datetime-local"></div>
+    <div><label>Capacity</label><input name="capacity" type="number"></div>
+  </div>
+  <label>Location</label><input name="location">
+  <button style="margin-top:10px">Create event</button>
+</form>
+<table><tr><th>ID</th><th>Title</th><th>Starts</th><th>Location</th><th>Ministry</th></tr>
+<% items.forEach(e=>{ %><tr><td><%= e.id %></td><td><%= e.title %></td><td><%= e.starts_at %></td><td><%= e.location %></td><td><%= e.ministry_name %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PayFast checkout</title>
+<style>body{font-family:system-ui;background:#FAF8F5;display:grid;place-items:center;height:100vh;margin:0}form{background:#fff;padding:32px;border:1px solid #E7E2D8;border-radius:12px;text-align:center}</style></head><body>
+<form id="pf" method="post" action="<%= url %>">
+  <% Object.entries(fields).forEach(([k,v])=>{ %><input type="hidden" name="<%= k %>" value="<%= v %>"><% }) %>
+  <h2>Redirecting to PayFast…</h2>
+  <p class="muted">R <%= Number(donation.amount).toFixed(2) %> · <%= donation.fund %></p>
+  <button type="submit">Continue</button>
+</form>
+<script>setTimeout(()=>document.getElementById('pf').submit(),400);</script>
+</body></html>

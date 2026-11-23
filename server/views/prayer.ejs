@@ -1,0 +1,9 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Prayer wall</h1>
+<table><tr><th>ID</th><th>Author</th><th>Ministry</th><th>Text</th><th>Status</th><th>Action</th></tr>
+<% items.forEach(p=>{ %><tr>
+<td><%= p.id %></td><td><%= p.author_name %></td><td><%= p.ministry_name %></td><td><%= (p.text||'').slice(0,80) %></td><td><%= p.status %></td>
+<td><form method="post" action="/admin/prayer/<%= p.id %>/status"><select name="status"><option>open</option><option>prayed</option><option>answered</option><option>hidden</option></select><button class="btn-secondary">Set</button></form></td>
+</tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

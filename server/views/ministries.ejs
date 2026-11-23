@@ -1,0 +1,17 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Ministries</h1>
+<form method="post" action="/admin/ministries" class="card">
+  <div class="row">
+    <div style="flex:1"><label>Name</label><input name="name" required></div>
+    <div><label>Campus</label><select name="campus_id"><option value="">—</option><% campuses.forEach(c=>{ %><option value="<%= c.id %>"><%= c.name %></option><% }) %></select></div>
+    <div><label>Leader</label><select name="leader_id"><option value="">—</option><% leaders.forEach(l=>{ %><option value="<%= l.id %>"><%= l.name %></option><% }) %></select></div>
+    <div><label>Color</label><input name="color" placeholder="#2C97C5"></div>
+  </div>
+  <label>Gathering</label><input name="gathering">
+  <label>Description</label><textarea name="description" rows="2"></textarea>
+  <button style="margin-top:10px">Create ministry</button>
+</form>
+<table><tr><th>ID</th><th>Name</th><th>Campus</th><th>Leader</th><th>Gathering</th></tr>
+<% ministries.forEach(m=>{ %><tr><td><%= m.id %></td><td><%= m.name %></td><td><%= m.campus_name %></td><td><%= m.leader_name %></td><td><%= m.gathering %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

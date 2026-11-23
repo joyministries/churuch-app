@@ -1,0 +1,15 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Chat rooms</h1>
+<form method="post" action="/admin/chat" class="card">
+  <div class="row">
+    <div><label>Kind</label><select name="kind"><option>ministry</option><option>church</option><option>team</option></select></div>
+    <div style="flex:2"><label>Name</label><input name="name" required></div>
+    <div><label>Ministry</label><select name="ministry_id"><option value="">—</option><% ministries.forEach(m=>{ %><option value="<%= m.id %>"><%= m.name %></option><% }) %></select></div>
+  </div>
+  <label>Description</label><input name="description">
+  <button style="margin-top:10px">Create room</button>
+</form>
+<table><tr><th>ID</th><th>Kind</th><th>Name</th><th>Ministry</th><th>Members</th></tr>
+<% rooms.forEach(r=>{ %><tr><td><%= r.id %></td><td><%= r.kind %></td><td><%= r.name %></td><td><%= r.ministry_name %></td><td><%= r.members %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

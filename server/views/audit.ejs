@@ -1,0 +1,6 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Audit log</h1>
+<table><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Ministry</th></tr>
+<% items.forEach(a=>{ %><tr><td><%= a.created_at %></td><td><%= a.actor_name %></td><td><%= a.action %></td><td><%= a.target %></td><td><%= a.ministry_name %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

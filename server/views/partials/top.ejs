@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title><%= title || 'Joy Ministries Admin' %></title>
+<style>
+/* ------------------------------------------------------------------
+   Joy Ministries — office console.
+   Built like an internal tool: system type, dense rows, quiet colour.
+   No display serif, no hero, no cards-inside-cards.
+   ------------------------------------------------------------------ */
+:root{
+  --bg:#F4F4F2;
+  --panel:#FFFFFF;
+  --ink:#1B1B1A;
+  --muted:#6E6E6A;
+  --faint:#94948E;
+  --line:#DEDEDA;
+  --line-soft:#EBEBE7;
+  --accent:#2F5D7C;
+  --accent-soft:#EAF0F4;
+  --ok:#2C6B47;
+  --warn:#8A5A08;
+  --bad:#A5342A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:13px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+
+/* top bar -------------------------------------------------------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  height:44px;padding:0 16px;background:var(--panel);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;
+}
+.topbar .app{display:flex;align-items:center;gap:8px;font-size:13px}
+.topbar .app b{font-weight:600}
+.topbar .app .tag{
+  font-size:10px;color:var(--muted);background:var(--bg);
+  border:1px solid var(--line);border-radius:3px;padding:1px 6px;
+}
+.topbar .right{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted)}
+.topbar .right b{color:var(--ink);font-weight:500}
+.topbar .right a:hover{color:var(--ink);text-decoration:underline}
+
+/* layout --------------------------------------------------------- */
+.layout{display:flex;min-height:calc(100vh - 44px)}
+.side{
+  width:198px;flex:none;background:var(--panel);
+  border-right:1px solid var(--line);padding:10px 0 24px;
+}
+.side .group{
+  padding:14px 16px 5px;font-size:10px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--faint);
+}
+.side a{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 16px;font-size:13px;color:#3A3A37;
+  border-left:2px solid transparent;
+}
+.side a:hover{background:#F7F7F5;color:var(--ink)}
+.side a.active{
+  background:var(--accent-soft);color:var(--accent);font-weight:600;
+  border-left-color:var(--accent);
+}
+.side a .n{
+  font-size:10px;color:var(--faint);min-width:13px;font-variant-numeric:tabular-nums;
+}
+.side a.active .n{color:var(--accent)}
+
+.main{flex:1;min-width:0;padding:20px 24px 64px;max-width:1240px}
+
+/* headings ------------------------------------------------------- */
+h1{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:0 0 3px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 18px}
+h2{
+  font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);margin:26px 0 8px;
+  display:flex;align-items:center;gap:10px;
+}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+h3{font-size:13px;font-weight:600;margin:16px 0 6px}
+
+/* tables --------------------------------------------------------- */
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+th{
+  font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);text-align:left;padding:7px 10px;
+  background:#FAFAF8;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+td{padding:7px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top;font-size:12.5px}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td,table tr:hover td{background:#FBFBFA}
+td:first-child{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* stats ---------------------------------------------------------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.stat{background:var(--panel);padding:12px 14px}
+.stat .n{font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat .muted{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* surfaces ------------------------------------------------------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:14px}
+.card > h2:first-child{margin-top:0}
+.card > h2:first-child::after{display:none}
+.muted{color:var(--muted);font-size:12px}
+
+/* forms ---------------------------------------------------------- */
+label{display:block;margin:10px 0 3px;font-size:11.5px;font-weight:500;color:var(--muted)}
+input,textarea,select{
+  width:100%;padding:6px 9px;border:1px solid #CFCFCA;border-radius:3px;
+  font:inherit;font-size:12.5px;background:#fff;color:var(--ink);
+}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(47,93,124,.12)}
+textarea{min-height:84px;resize:vertical}
+input[type=file]{padding:5px;border-style:dashed;background:#FAFAF8}
+input[type=file]::file-selector-button{
+  margin-right:10px;padding:4px 10px;border:1px solid #CFCFCA;border-radius:3px;
+  background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px;
+}
+input[type=file]::file-selector-button:hover{border-color:var(--accent);color:var(--accent)}
+
+button,.btn{
+  display:inline-block;background:var(--accent);color:#fff;border:1px solid var(--accent);
+  padding:6px 12px;border-radius:3px;cursor:pointer;font:inherit;font-size:12px;font-weight:500;
+  line-height:1.4;
+}
+button:hover,.btn:hover{background:#26506C;border-color:#26506C}
+.btn-secondary{background:#fff;color:var(--ink);border:1px solid #CFCFCA}
+.btn-secondary:hover{background:#F7F7F5;color:var(--ink);border-color:#B9B9B4}
+.btn-danger{background:#fff;color:var(--bad);border:1px solid #E0C4C0}
+.btn-danger:hover{background:var(--bad);border-color:var(--bad);color:#fff}
+
+/* helpers -------------------------------------------------------- */
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row > .grow{flex:1 1 200px}
+.pill{
+  display:inline-block;padding:1px 6px;border-radius:3px;background:var(--bg);
+  border:1px solid var(--line);font-size:10.5px;color:#4A4A46;
+}
+.pill.ok{color:var(--ok);border-color:#BFD8CB;background:#F2F8F4}
+.pill.warn{color:var(--warn);border-color:#E3D2AC;background:#FDF8EE}
+.pill.bad{color:var(--bad);border-color:#E0C4C0;background:#FCF3F2}
+
+.flash{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+  padding:8px 12px;margin-bottom:14px;font-size:12.5px;border-radius:3px;
+}
+.flash.success{border-left-color:var(--ok)}
+.flash.error{border-left-color:var(--bad)}
+
+.foot{
+  margin-top:34px;padding-top:10px;border-top:1px solid var(--line);
+  font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+
+@media (max-width:860px){
+  .layout{flex-direction:column}
+  .side{width:auto;display:flex;overflow-x:auto;padding:0;border-right:none;border-bottom:1px solid var(--line)}
+  .side .group{display:none}
+  .side a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;padding:9px 12px}
+  .side a.active{border-bottom-color:var(--accent)}
+  .side a .n{display:none}
+  .main{padding:16px 14px 48px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="app">
+    <b>Joy Ministries</b>
+    <span class="tag">Admin</span>
+  </div>
+  <div class="right">
+    <% if (typeof me !== 'undefined' && me) { %>
+      <span><b><%= me.name %></b> · <%= String(me.role).replace('_',' ') %></span>
+      <a href="/admin/logout">Sign out</a>
+    <% } else { %>
+      <a href="/admin/login">Sign in</a>
+    <% } %>
+  </div>
+</header>
+
+<% if (typeof me !== 'undefined' && me) { %>
+<% const here = (typeof currentPath !== 'undefined' && currentPath) || ''; %>
+<div class="layout">
+  <nav class="side">
+    <a href="/admin" class="<%= here === '/' ? 'active' : '' %>"><span class="n">01</span>Dashboard</a>
+    <a href="/admin/users" class="<%= here === '/users' ? 'active' : '' %>"><span class="n">02</span>People</a>
+    <a href="/admin/ministries" class="<%= here === '/ministries' ? 'active' : '' %>"><span class="n">03</span>Ministries</a>
+    <div class="group">Publish</div>
+    <a href="/admin/content" class="<%= here === '/content' ? 'active' : '' %>"><span class="n">04</span>Notices</a>
+    <a href="/admin/events" class="<%= here === '/events' ? 'active' : '' %>"><span class="n">05</span>Events</a>
+    <a href="/admin/sermons" class="<%= here === '/sermons' ? 'active' : '' %>"><span class="n">06</span>Sermons</a>
+    <a href="/admin/resources" class="<%= here === '/resources' ? 'active' : '' %>"><span class="n">07</span>Library</a>
+    <a href="/admin/media" class="<%= here === '/media' ? 'active' : '' %>"><span class="n">08</span>Media</a>
+    <div class="group">Care</div>
+    <a href="/admin/prayer" class="<%= here === '/prayer' ? 'active' : '' %>"><span class="n">09</span>Prayer</a>
+    <a href="/admin/chat" class="<%= here === '/chat' ? 'active' : '' %>"><span class="n">10</span>Chat rooms</a>
+    <a href="/admin/notifications" class="<%= here === '/notifications' ? 'active' : '' %>"><span class="n">11</span>Notifications</a>
+    <div class="group">Stewardship</div>
+    <a href="/admin/giving" class="<%= here === '/giving' ? 'active' : '' %>"><span class="n">12</span>Giving</a>
+    <a href="/admin/audit" class="<%= here === '/audit' ? 'active' : '' %>"><span class="n">13</span>Audit log</a>
+    <a href="/admin/settings" class="<%= here === '/settings' ? 'active' : '' %>"><span class="n">14</span>Settings</a>
+  </nav>
+  <div class="main">
+    <% if (typeof flash !== 'undefined' && flash) { %><div class="flash <%= flash.type %>"><%= flash.message %></div><% } %>
+<% } else { %>
+<div class="main" style="max-width:none">
+<% } %>

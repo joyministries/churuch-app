@@ -1,0 +1,13 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Media uploads</h1>
+<form method="post" action="/admin/media" enctype="multipart/form-data" class="card">
+  <div class="row">
+    <div style="flex:2"><label>Title</label><input name="title"></div>
+    <div style="flex:2"><label>File</label><input name="file" type="file" required></div>
+  </div>
+  <button style="margin-top:10px">Upload</button>
+</form>
+<table><tr><th>ID</th><th>Kind</th><th>Title</th><th>URL</th><th>Size</th></tr>
+<% items.forEach(m=>{ %><tr><td><%= m.id %></td><td><%= m.kind %></td><td><%= m.title %></td><td><a href="<%= m.url %>">open</a></td><td><%= m.size_bytes %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>

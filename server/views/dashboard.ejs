@@ -1,0 +1,37 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Dashboard</h1>
+<p class="sub">People, giving, what is coming up, and what needs a reply.</p>
+
+<div class="grid">
+  <div class="stat"><div class="n"><%= stats.u %></div><div class="muted">People on record</div></div>
+  <div class="stat"><div class="n">R&nbsp;<%= Number(stats.g).toFixed(2) %></div><div class="muted">Giving received</div></div>
+  <div class="stat"><div class="n"><%= stats.e %></div><div class="muted">Upcoming events</div></div>
+  <div class="stat"><div class="n"><%= stats.p %></div><div class="muted">Open prayer requests</div></div>
+</div>
+
+<h2>Recent activity</h2>
+<table>
+  <tr><th>When</th><th>Action</th><th>Target</th></tr>
+  <% (recent||[]).forEach(r=>{ %>
+    <tr>
+      <td><%= r.created_at %></td>
+      <td><%= r.action %></td>
+      <td><%= r.target || '—' %></td>
+    </tr>
+  <% }) %>
+  <% if (!recent || !recent.length) { %>
+    <tr><td colspan="3" class="muted">Nothing recorded yet.</td></tr>
+  <% } %>
+</table>
+<div class="row" style="margin-top:10px">
+  <a class="btn btn-secondary" href="/admin/audit">Full audit log</a>
+</div>
+
+<h2>Shortcuts</h2>
+<div class="row">
+  <a class="btn btn-secondary" href="/admin/media">Upload a file</a>
+  <a class="btn btn-secondary" href="/admin/sermons">Add a sermon</a>
+  <a class="btn btn-secondary" href="/admin/events">Create an event</a>
+  <a class="btn btn-secondary" href="/admin/notifications">Send a notice</a>
+</div>
+<%- include('partials/bottom') %>

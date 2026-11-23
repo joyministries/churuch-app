@@ -1,0 +1,24 @@
+<%- include('partials/top', { title, me, flash }) %>
+<h1>Sermons</h1>
+<form method="post" action="/admin/sermons" class="card">
+  <div class="row">
+    <div style="flex:1"><label>YouTube ID</label><input name="youtube_id" required></div>
+    <div style="flex:2"><label>Title</label><input name="title" required></div>
+  </div>
+  <div class="row">
+    <div style="flex:1"><label>Speaker</label><input name="speaker"></div>
+    <div style="flex:1"><label>Series</label><input name="series"></div>
+    <div style="flex:1"><label>Scripture</label><input name="scripture"></div>
+  </div>
+  <label>Description</label><textarea name="description" rows="2"></textarea>
+  <div class="row">
+    <div style="flex:1"><label>Published at</label><input name="published_at" type="datetime-local"></div>
+    <label style="margin-top:24px"><input type="checkbox" name="is_featured"> Featured</label>
+    <label style="margin-top:24px"><input type="checkbox" name="visible" checked> Visible</label>
+  </div>
+  <button style="margin-top:10px">Save sermon</button>
+</form>
+<table><tr><th>ID</th><th>YouTube</th><th>Title</th><th>Speaker</th><th>Published</th></tr>
+<% items.forEach(s=>{ %><tr><td><%= s.id %></td><td><%= s.youtube_id %></td><td><%= s.title %></td><td><%= s.speaker %></td><td><%= s.published_at %></td></tr><% }) %>
+</table>
+<%- include('partials/bottom') %>
