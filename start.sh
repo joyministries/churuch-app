@@ -72,7 +72,7 @@ fi
 if [ "$MODE" != "web" ] && [ "$MODE" != "lan" ]; then
   if ! pgrep -f "cloudflared tunnel --url http://localhost:$API_PORT" >/dev/null 2>&1; then
     echo "→ opening public API tunnel"
-    ( setsid nohup cloudflared tunnel --url "http://localhost:$API_PORT" --no-autoupdate > "$LOG_DIR/cf-api.log" 2>&1 < /dev/null & )
+    ( setsid nohup cloudflared tunnel --url "http://localhost:$API_PORT" --no-autoupdate --protocol http2 > "$LOG_DIR/cf-api.log" 2>&1 < /dev/null & )
     for _ in $(seq 1 25); do grep -qo 'https://[a-z0-9-]*\.trycloudflare\.com' "$LOG_DIR/cf-api.log" 2>/dev/null && break; sleep 1; done
   fi
   API_PUBLIC="$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$LOG_DIR/cf-api.log" 2>/dev/null | head -1 || true)"
