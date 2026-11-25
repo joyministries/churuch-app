@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 42,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.6,
     lineHeight: 46,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   metaDate: { fontSize: typeScale.xs, fontFamily: fonts.medium, color: palette.onDarkMuted },
   sermonTitle: {
     fontSize: 26,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.onDark,
     lineHeight: 30,
     letterSpacing: -0.2,

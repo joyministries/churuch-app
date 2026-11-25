@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen, Avatar } from '../components';
-import { BrandLockup } from '../components/BrandMark';
 import { theme } from '../lib/theme';
 import { brand } from '../lib/brand';
 import { useAuthStore, useChatStore, useNotificationsStore, useQuickActionsStore } from '../store';
@@ -9,17 +9,17 @@ import { chatRooms, unreadCount } from '../lib/chat';
 import { api } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 
-const { palette, spacing, typeScale, radius, fonts } = theme;
+const { palette, spacing, fonts } = theme;
 
-const QUICK_ACTIONS = [
-  { icon: 'chatbubbles-outline', label: 'Chats', hint: 'Family & ministries', screen: 'ChatHub' },
-  { icon: 'heart-outline', label: 'Prayer', hint: 'Wall & requests', screen: 'Pray' },
-  { icon: 'card-outline', label: 'Give', hint: 'Tithe & offering', screen: 'Give' },
-  { icon: 'play-circle-outline', label: 'Sermons', hint: 'Watch & listen', screen: 'Media' },
-  { icon: 'calendar-outline', label: 'Events', hint: 'RSVP & check-in', screen: 'Events' },
-  { icon: 'people-outline', label: 'Ministries', hint: 'Find your place', screen: 'Ministries' },
-  { icon: 'school-outline', label: 'Growth', hint: 'Classes & tracks', screen: 'Growth' },
-  { icon: 'megaphone-outline', label: 'Notices', hint: 'Board & updates', screen: 'NoticeBoard' },
+const SHORTCUTS = [
+  { icon: 'chatbubbles-outline', label: 'Chats', screen: 'ChatHub' },
+  { icon: 'heart-outline', label: 'Prayer', screen: 'Pray' },
+  { icon: 'card-outline', label: 'Give', screen: 'Give' },
+  { icon: 'play-circle-outline', label: 'Sermons', screen: 'Media' },
+  { icon: 'calendar-outline', label: 'Events', screen: 'Events' },
+  { icon: 'people-outline', label: 'Ministries', screen: 'Ministries' },
+  { icon: 'school-outline', label: 'Growth', screen: 'Growth' },
+  { icon: 'megaphone-outline', label: 'Notices', screen: 'NoticeBoard' },
 ] as const;
 
 function parseDate(value?: string | null): Date | null {
@@ -34,7 +34,28 @@ function greetingFor(hour: number) {
   return 'Good evening';
 }
 
+function clock(d: Date | null) {
+  if (!d) return '';
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+function dayName(d: Date | null) {
+  if (!d) return '';
+  return d.toLocaleDateString(undefined, { weekday: 'short' });
+}
+
+function dayNumber(d: Date | null) {
+  if (!d) return '--';
+  return String(d.getDate()).padStart(2, '0');
+}
+
+function monthName(d: Date | null) {
+  if (!d) return '';
+  return d.toLocaleDateString(undefined, { month: 'short' });
+}
+
 export default function DashboardScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const [events, setEvents] = useState<any[]>([]);
   const [notices, setNotices] = useState<any[]>([]);
@@ -46,19 +67,21 @@ export default function DashboardScreen({ navigation }: any) {
   const unread = chatRooms
     .filter((r) => chatJoined[r.id])
     .reduce((total, r) => total + unreadCount(chatMessages[r.id] ?? [], chatRead[r.id]), 0);
+
   const notifications = useNotificationsStore((s) => s.items);
   const unreadNotes = notifications.filter((n) => !n.read).length;
 
   const recentActions = useQuickActionsStore((s) => s.recent);
   const touchAction = useQuickActionsStore((s) => s.touch);
 
-  const quickActions = [...QUICK_ACTIONS].sort((a, b) => {
+  /* The four a member reaches for most often float to the front of the grid. */
+  const shortcuts = [...SHORTCUTS].sort((a, b) => {
     const ai = recentActions.indexOf(a.screen);
     const bi = recentActions.indexOf(b.screen);
     const aRank = ai === -1 ? Number.MAX_SAFE_INTEGER : ai;
     const bRank = bi === -1 ? Number.MAX_SAFE_INTEGER : bi;
     if (aRank !== bRank) return aRank - bRank;
-    return QUICK_ACTIONS.indexOf(a) - QUICK_ACTIONS.indexOf(b);
+    return SHORTCUTS.indexOf(a) - SHORTCUTS.indexOf(b);
   });
 
   const load = async () => {
@@ -72,7 +95,9 @@ export default function DashboardScreen({ navigation }: any) {
     } catch {}
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -80,121 +105,120 @@ export default function DashboardScreen({ navigation }: any) {
     setRefreshing(false);
   };
 
-  const nextService = events.find((e) => {
-    const d = parseDate(e.starts_at);
-    return d ? d.getTime() > Date.now() : false;
-  }) ?? events[0];
+  const nextService =
+    events.find((e) => {
+      const d = parseDate(e.starts_at);
+      return d ? d.getTime() > Date.now() : false;
+    }) ?? events[0];
 
   const startsAt = parseDate(nextService?.starts_at);
   const firstName = (user?.name ?? 'Friend').split(' ')[0];
   const greeting = greetingFor(new Date().getHours());
+  const later = events.filter((e) => e.id !== nextService?.id).slice(0, 3);
 
   return (
     <Screen scroll={false} style={styles.screen}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[palette.accent]} tintColor={palette.accent} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[palette.accent]} tintColor={palette.accent} />
+        }
       >
-        {/* Brand — the mark stays on every load, above the fold */}
-        <View style={styles.brandRow}>
-          <BrandLockup size={32} onPress={() => navigation.navigate('Ministries')} />
-          <View style={styles.headerActions}>
-            <Pressable
-              onPress={() => navigation.navigate('Notifications')}
-              accessibilityRole="button"
-              accessibilityLabel={unreadNotes ? `Open notifications, ${unreadNotes} unread` : 'Open notifications'}
-              hitSlop={8}
-              style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-            >
-              <Ionicons name="notifications-outline" size={20} color={palette.ink} />
-              {unreadNotes > 0 ? (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{unreadNotes > 9 ? '9+' : unreadNotes}</Text>
-                </View>
-              ) : null}
-            </Pressable>
-            <Pressable
-              onPress={() => navigation.navigate('ChatHub')}
-              accessibilityRole="button"
-              accessibilityLabel={unread ? `Open chats, ${unread} unread` : 'Open chats'}
-              hitSlop={8}
-              style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-            >
-              <Ionicons name="chatbubbles-outline" size={20} color={palette.ink} />
-              {unread > 0 ? (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{unread > 9 ? '9+' : unread}</Text>
-                </View>
-              ) : null}
-            </Pressable>
-            <Pressable
-              onPress={() => navigation.navigate('Profile')}
-              accessibilityRole="button"
-              accessibilityLabel="Open your profile"
-              hitSlop={8}
-              style={({ pressed }) => [styles.avatarBtn, pressed && styles.pressed]}
-            >
-              <Avatar name={user?.name ?? 'Friend'} size={36} />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>{brand.location.toUpperCase()}</Text>
-          <Text style={styles.greeting}>{greeting},</Text>
-          <Text style={styles.name} numberOfLines={1}>{firstName}</Text>
-        </View>
-
-        {/* Next service — a printed band that runs edge to edge, not a card */}
-        {nextService && (
-          <View style={styles.service}>
-            <View style={styles.serviceTop}>
-              <Text style={styles.serviceLabel}>NEXT SERVICE</Text>
-              {startsAt && (
-                <Text style={styles.serviceLabel}>
-                  {startsAt
-                    .toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' })
-                    .toUpperCase()}
-                </Text>
-              )}
+        {/* Masthead — the church's own colour, carrying the greeting */}
+        <View style={[styles.masthead, { paddingTop: insets.top + spacing.md }]}>
+          <View style={styles.mastheadRow}>
+            <View style={styles.wordmark}>
+              <Text style={styles.wordmarkText}>JOY MINISTRIES</Text>
+              <Text style={styles.wordmarkSub}>{brand.location}</Text>
             </View>
-            <Text style={styles.serviceTitle} numberOfLines={2}>{nextService.title}</Text>
-            <Text style={styles.serviceMeta}>
-              {startsAt
-                ? `${startsAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}  ·  ${brand.location}`
-                : brand.location}
-            </Text>
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={() => navigation.navigate('Notifications')}
+                accessibilityRole="button"
+                accessibilityLabel={unreadNotes ? `Notifications, ${unreadNotes} unread` : 'Notifications'}
+                hitSlop={8}
+                style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+              >
+                <Ionicons name="notifications-outline" size={20} color={palette.onDark} />
+                {unreadNotes > 0 ? (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{unreadNotes > 9 ? '9+' : unreadNotes}</Text>
+                  </View>
+                ) : null}
+              </Pressable>
+              <Pressable
+                onPress={() => navigation.navigate('Profile')}
+                accessibilityRole="button"
+                accessibilityLabel="Your profile"
+                hitSlop={8}
+                style={({ pressed }) => [styles.avatarBtn, pressed && styles.pressed]}
+              >
+                <Avatar name={user?.name ?? 'Friend'} size={34} />
+              </Pressable>
+            </View>
+          </View>
+
+          <Text style={styles.greeting}>
+            {greeting}, {firstName}
+          </Text>
+          <Text style={styles.mastheadLine}>
+            {startsAt
+              ? `Next service ${dayName(startsAt)} ${clock(startsAt)} · ${brand.location}`
+              : `Sundays · 10:00 · ${brand.location}`}
+          </Text>
+        </View>
+
+        {/* Next service — the one card that earns a card */}
+        {nextService ? (
+          <Pressable
+            onPress={() => navigation.navigate('EventDetail', { id: nextService.id })}
+            accessibilityRole="button"
+            accessibilityLabel={`${nextService.title}, open details`}
+            style={({ pressed }) => [styles.serviceCard, pressed && styles.cardPressed]}
+          >
+            <View style={styles.serviceTop}>
+              <View style={styles.dateBlock}>
+                <Text style={styles.dateDay}>{dayNumber(startsAt)}</Text>
+                <Text style={styles.dateMonth}>{monthName(startsAt)}</Text>
+              </View>
+              <View style={styles.serviceBody}>
+                <Text style={styles.serviceKicker}>Next up</Text>
+                <Text style={styles.serviceTitle} numberOfLines={2}>
+                  {nextService.title}
+                </Text>
+                <Text style={styles.serviceMeta} numberOfLines={1}>
+                  {startsAt ? `${clock(startsAt)} · ` : ''}
+                  {nextService.location || brand.location}
+                </Text>
+              </View>
+            </View>
+
             <View style={styles.serviceActions}>
               <Pressable
                 onPress={() => navigation.navigate('Media')}
                 accessibilityRole="button"
-                accessibilityLabel="Watch the service live"
-                style={({ pressed }) => [styles.serviceAction, pressed && styles.pressed]}
+                accessibilityLabel="Watch the service"
+                style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}
               >
-                <Text style={styles.serviceActionLabel}>Watch live</Text>
-                <Ionicons name="arrow-forward" size={13} color={palette.onDark} />
+                <Ionicons name="play" size={13} color={palette.white} />
+                <Text style={styles.primaryBtnLabel}>Watch</Text>
               </Pressable>
               <Pressable
                 onPress={() => navigation.navigate('EventDetail', { id: nextService.id })}
                 accessibilityRole="button"
-                accessibilityLabel="RSVP for this service"
-                style={({ pressed }) => [styles.serviceAction, pressed && styles.pressed]}
+                accessibilityLabel="See details and RSVP"
+                style={({ pressed }) => [styles.secondaryBtn, pressed && styles.btnPressed]}
               >
-                <Text style={styles.serviceActionLabel}>RSVP</Text>
+                <Text style={styles.secondaryBtnLabel}>Details</Text>
               </Pressable>
             </View>
-          </View>
-        )}
+          </Pressable>
+        ) : null}
 
-        {/* Quick actions — one directory card, hairlines instead of floating tiles */}
-        <View style={styles.sectionHead}>
-          <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
-          <View style={styles.sectionRule} />
-        </View>
-        <View style={styles.actionList}>
-          {quickActions.map((q, i) => (
+        {/* Shortcuts — the app's whole map, one tap away */}
+        <View style={styles.grid}>
+          {shortcuts.map((q) => (
             <Pressable
               key={q.label}
               onPress={() => {
@@ -202,66 +226,111 @@ export default function DashboardScreen({ navigation }: any) {
                 navigation.navigate(q.screen);
               }}
               accessibilityRole="button"
-              accessibilityLabel={`${q.label} — ${q.hint}`}
-              style={({ pressed }) => [styles.action, i > 0 && styles.actionDivider, pressed && styles.pressed]}
+              accessibilityLabel={q.label}
+              style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}
             >
-              <Ionicons name={q.icon as any} size={15} color={palette.ink} />
-              <Text style={styles.actionLabel}>{q.label}</Text>
-              <Text style={styles.actionHint} numberOfLines={1}>{q.hint}</Text>
-              <Ionicons name="chevron-forward" size={13} color={palette.control} />
+              <View style={styles.shortcutIcon}>
+                <Ionicons name={q.icon as any} size={21} color={palette.navy} />
+                {q.screen === 'ChatHub' && unread > 0 ? <View style={styles.dot} /> : null}
+              </View>
+              <Text style={styles.shortcutLabel}>{q.label}</Text>
             </Pressable>
           ))}
         </View>
 
+        {/* The week ahead */}
+        {later.length > 0 ? (
+          <View style={styles.block}>
+            <View style={styles.blockHead}>
+              <Text style={styles.blockTitle}>This week</Text>
+              <Pressable onPress={() => navigation.navigate('Events')} hitSlop={8} accessibilityRole="button">
+                <Text style={styles.link}>All events</Text>
+              </Pressable>
+            </View>
+            <View style={styles.list}>
+              {later.map((e, i) => {
+                const d = parseDate(e.starts_at);
+                return (
+                  <Pressable
+                    key={e.id}
+                    onPress={() => navigation.navigate('EventDetail', { id: e.id })}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${e.title}, ${dayName(d)} ${clock(d)}`}
+                    style={({ pressed }) => [styles.row, i > 0 && styles.rowDivider, pressed && styles.pressed]}
+                  >
+                    <View style={styles.rowDate}>
+                      <Text style={styles.rowWeekday}>{dayName(d)}</Text>
+                      <Text style={styles.rowDay}>{dayNumber(d)}</Text>
+                    </View>
+                    <View style={styles.rowBody}>
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {e.title}
+                      </Text>
+                      <Text style={styles.rowMeta} numberOfLines={1}>
+                        {clock(d)}
+                        {e.location ? ` · ${e.location}` : ''}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={15} color={palette.control} />
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+
+        {/* Notice board */}
+        <View style={styles.block}>
+          <View style={styles.blockHead}>
+            <Text style={styles.blockTitle}>Notices</Text>
+            <Pressable onPress={() => navigation.navigate('NoticeBoard')} hitSlop={8} accessibilityRole="button">
+              <Text style={styles.link}>All notices</Text>
+            </Pressable>
+          </View>
+          {notices.length ? (
+            <View style={styles.list}>
+              {notices.slice(0, 3).map((n, i) => (
+                <Pressable
+                  key={n.id}
+                  onPress={() => navigation.navigate('NoticeBoard')}
+                  accessibilityRole="button"
+                  accessibilityLabel={n.title}
+                  style={({ pressed }) => [styles.row, i > 0 && styles.rowDivider, pressed && styles.pressed]}
+                >
+                  <View style={styles.rowBody}>
+                    <Text style={styles.rowTitle} numberOfLines={2}>
+                      {n.title}
+                    </Text>
+                    {n.body ? (
+                      <Text style={styles.rowText} numberOfLines={2}>
+                        {n.body}
+                      </Text>
+                    ) : null}
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.empty}>Nothing posted yet.</Text>
+          )}
+        </View>
+
         {/* Devotional */}
-        <View style={styles.rule} />
         <Pressable
           onPress={() => navigation.navigate('Devotionals')}
           accessibilityRole="button"
           accessibilityLabel="Open today's devotional"
-          style={({ pressed }) => [styles.devotional, pressed && styles.pressed]}
+          style={({ pressed }) => [styles.devotional, pressed && styles.cardPressed]}
         >
-          <View style={styles.devotionalHead}>
-            <Text style={styles.sectionLabel}>TODAY&apos;S DEVOTIONAL</Text>
-            <View style={styles.streak}>
-              <View style={styles.streakRule} />
-              <Text style={styles.streakText}>DAY 7</Text>
-            </View>
+          <View style={styles.devotionalBody}>
+            <Text style={styles.devotionalKicker}>Today&apos;s devotional</Text>
+            <Text style={styles.devotionalTitle}>Walk in Love</Text>
+            <Text style={styles.devotionalMeta}>3 min read · reflection prompt</Text>
           </View>
-          <Text style={styles.devotionalTitle}>Walk in Love</Text>
-          <Text style={styles.devotionalMeta}>3 min read · reflection prompt</Text>
-          <View style={styles.readRow}>
-            <Text style={styles.readLabel}>Read devotional</Text>
-            <Ionicons name="arrow-forward" size={14} color={palette.accent} />
+          <View style={styles.devotionalArrow}>
+            <Ionicons name="arrow-forward" size={16} color={palette.navy} />
           </View>
         </Pressable>
-
-        {/* Notice board — indexed list, hairlines not stacked cards */}
-        <View style={styles.rule} />
-        <View style={styles.sectionHead}>
-          <Text style={styles.sectionLabel}>NOTICE BOARD</Text>
-          <View style={styles.sectionRule} />
-          <Pressable onPress={() => navigation.navigate('NoticeBoard')} accessibilityRole="button" accessibilityLabel="See all notices" hitSlop={8}>
-            <Text style={styles.linkLabel}>All</Text>
-          </Pressable>
-        </View>
-
-        {notices.slice(0, 3).map((n, i) => (
-          <Pressable
-            key={n.id}
-            onPress={() => navigation.navigate('NoticeBoard')}
-            accessibilityRole="button"
-            accessibilityLabel={n.title}
-            style={({ pressed }) => [styles.notice, pressed && styles.pressed]}
-          >
-            <Text style={styles.noticeIndex}>{String(i + 1).padStart(2, '0')}</Text>
-            <View style={styles.noticeBody}>
-              <Text style={styles.noticeTitle} numberOfLines={2}>{n.title}</Text>
-              {n.body ? <Text style={styles.noticeText} numberOfLines={2}>{n.body}</Text> : null}
-            </View>
-          </Pressable>
-        ))}
-        {notices.length === 0 && <Text style={styles.empty}>Nothing posted yet.</Text>}
       </ScrollView>
     </Screen>
   );
@@ -269,156 +338,242 @@ export default function DashboardScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: 0, paddingBottom: 0 },
-  content: { paddingHorizontal: 24, paddingBottom: 96, gap: 18 },
+  content: { paddingBottom: 40 },
 
-  brandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  iconBtn: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
+  /* masthead */
+  masthead: {
+    backgroundColor: palette.deep,
+    paddingHorizontal: spacing.pad,
+    paddingBottom: spacing.xxl + 6,
   },
+  mastheadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  wordmark: { gap: 1 },
+  wordmarkText: {
+    fontFamily: fonts.extra,
+    fontSize: 13,
+    letterSpacing: 1.2,
+    color: palette.onDark,
+    includeFontPadding: false,
+  },
+  wordmarkSub: { fontFamily: fonts.regular, fontSize: 11, color: palette.onDarkMuted },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   avatarBtn: { borderRadius: 999 },
-  pressed: { opacity: 0.6 },
+  pressed: { opacity: 0.65 },
   badge: {
     position: 'absolute',
-    top: 1,
-    right: 1,
-    minWidth: 18,
-    height: 18,
+    top: 3,
+    right: 3,
+    minWidth: 17,
+    height: 17,
     paddingHorizontal: 4,
     borderRadius: 999,
     borderWidth: 2,
-    borderColor: palette.ground,
+    borderColor: palette.deep,
     backgroundColor: palette.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
     fontSize: 9,
-    fontFamily: 'Plus Jakarta Sans Bold',
-    color: palette.surface,
+    fontFamily: fonts.bold,
+    color: palette.white,
     lineHeight: 11,
     includeFontPadding: false,
   },
-
-  header: { marginBottom: 0 },
-  eyebrow: {
-    fontSize: 9.5,
-    fontFamily: 'Plus Jakarta Sans SemiBold',
-    color: palette.muted,
-    letterSpacing: 1.5,
-    includeFontPadding: false,
-  },
-  greeting: { fontSize: 14, fontFamily: 'Plus Jakarta Sans', color: palette.muted, marginTop: 8 },
-  name: { fontSize: 32, fontFamily: 'Instrument Serif', color: palette.ink, letterSpacing: -0.6, lineHeight: 38 },
-
-  /* Full-bleed band: square edges, no card, no radius. */
-  service: {
-    backgroundColor: palette.deep,
-    marginHorizontal: -24,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 20,
-    marginBottom: 4,
-  },
-  serviceTop: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  serviceLabel: {
-    fontSize: 9,
-    fontFamily: 'Plus Jakarta Sans SemiBold',
-    color: palette.sky,
-    letterSpacing: 1.8,
-    includeFontPadding: false,
-  },
-  serviceTitle: {
-    fontSize: 34,
-    fontFamily: 'Instrument Serif',
+  greeting: {
+    fontFamily: fonts.bold,
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: -0.4,
     color: palette.onDark,
-    letterSpacing: -0.5,
-    lineHeight: 38,
+    marginTop: spacing.xl,
   },
-  serviceMeta: { fontSize: 11, fontFamily: 'Plus Jakarta Sans', color: palette.onDarkMuted, marginTop: 8 },
-  serviceActions: {
+  mastheadLine: {
+    fontFamily: fonts.regular,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: palette.onDarkMuted,
+    marginTop: 5,
+  },
+
+  /* next service */
+  serviceCard: {
+    backgroundColor: palette.surface,
+    marginHorizontal: spacing.pad,
+    marginTop: -22,
+    borderRadius: 14,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: palette.line,
+  },
+  cardPressed: { opacity: 0.85 },
+  serviceTop: { flexDirection: 'row', gap: spacing.md },
+  dateBlock: {
+    width: 54,
+    height: 58,
+    borderRadius: 10,
+    backgroundColor: palette.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateDay: {
+    fontFamily: fonts.bold,
+    fontSize: 20,
+    lineHeight: 23,
+    color: palette.navy,
+    includeFontPadding: false,
+  },
+  dateMonth: {
+    fontFamily: fonts.semi,
+    fontSize: 10,
+    letterSpacing: 0.6,
+    color: palette.navy,
+    includeFontPadding: false,
+  },
+  serviceBody: { flex: 1, justifyContent: 'center' },
+  serviceKicker: { fontFamily: fonts.medium, fontSize: 11.5, color: palette.muted },
+  serviceTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.2,
+    color: palette.ink,
+    marginTop: 1,
+  },
+  serviceMeta: { fontFamily: fonts.regular, fontSize: 12, color: palette.muted, marginTop: 3 },
+  serviceActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+  primaryBtn: {
+    flex: 1,
+    height: 40,
+    borderRadius: 9,
+    backgroundColor: palette.navy,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 22,
-    marginTop: 20,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.16)',
+    justifyContent: 'center',
+    gap: 6,
   },
-  serviceAction: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  serviceActionLabel: {
-    fontSize: 10,
-    fontFamily: 'Plus Jakarta Sans SemiBold',
-    color: palette.onDark,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    includeFontPadding: false,
+  btnPressed: { opacity: 0.8 },
+  primaryBtnLabel: { fontFamily: fonts.semi, fontSize: 13.5, color: palette.white },
+  secondaryBtn: {
+    paddingHorizontal: spacing.lg,
+    height: 40,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: palette.control,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  secondaryBtnLabel: { fontFamily: fonts.semi, fontSize: 13.5, color: palette.ink },
 
-  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: -4 },
-  sectionRule: { flex: 1, height: 1, backgroundColor: palette.border },
-  sectionLabel: { fontSize: 9.5, fontFamily: 'Plus Jakarta Sans SemiBold', color: palette.muted, letterSpacing: 1.5, includeFontPadding: false },
-
-  actionList: { marginBottom: 0 },
-  action: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
-  actionDivider: { borderTopWidth: 1, borderTopColor: palette.border },
-  actionLabel: { fontSize: 13, fontFamily: 'Plus Jakarta Sans SemiBold', color: palette.ink, lineHeight: 18 },
-  actionHint: {
-    flex: 1,
-    textAlign: 'right',
-    fontSize: 11,
-    fontFamily: 'Plus Jakarta Sans',
-    color: palette.muted,
+  /* shortcut grid */
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: spacing.pad - 4,
+    marginTop: spacing.xxl,
   },
-
-  rule: { height: 1, backgroundColor: palette.rule, marginBottom: 0 },
-
-  devotional: { marginBottom: 0 },
-  devotionalHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  streak: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  streakRule: { width: 14, height: 1, backgroundColor: palette.border },
-  streakText: {
-    fontSize: 9.5,
-    fontFamily: 'Plus Jakarta Sans SemiBold',
-    color: palette.muted,
-    letterSpacing: 1.2,
-    includeFontPadding: false,
+  shortcut: { width: '25%', alignItems: 'center', paddingVertical: spacing.sm, gap: 7 },
+  shortcutIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 13,
+    backgroundColor: palette.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  devotionalTitle: { fontSize: 24, fontFamily: 'Instrument Serif', color: palette.ink, letterSpacing: -0.3, lineHeight: 28 },
-  devotionalMeta: { fontSize: 12, fontFamily: 'Plus Jakarta Sans', color: palette.muted, marginTop: 4 },
-  readRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 16 },
-  readLabel: { fontSize: 13, fontFamily: 'Plus Jakarta Sans SemiBold', color: palette.accent },
-
-  notice: { flexDirection: 'row', gap: 16, paddingVertical: 16, borderTopWidth: 1, borderTopColor: palette.border },
-  noticeIndex: {
-    fontSize: 9.5,
-    fontFamily: 'Plus Jakarta Sans SemiBold',
-    color: palette.muted,
-    letterSpacing: 1,
-    paddingTop: 4,
-    includeFontPadding: false,
+  dot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: palette.negative,
+    borderWidth: 1.5,
+    borderColor: palette.accentSoft,
   },
-  noticeBody: { flex: 1 },
-  noticeTitle: {
-    fontSize: 16,
-    fontFamily: 'Instrument Serif',
+  shortcutLabel: {
+    fontFamily: fonts.medium,
+    fontSize: 11.5,
     color: palette.ink,
-    letterSpacing: -0.1,
-    lineHeight: 21,
+    textAlign: 'center',
   },
-  noticeText: { fontSize: 12, fontFamily: 'Plus Jakarta Sans', color: palette.muted, lineHeight: 18, marginTop: 2 },
 
-  linkLabel: { fontSize: 12, fontFamily: 'Plus Jakarta Sans SemiBold', color: palette.accent },
-  empty: { fontSize: 12, fontFamily: 'Plus Jakarta Sans', color: palette.muted, paddingVertical: 16 },
+  /* blocks */
+  block: { marginTop: spacing.xxl, paddingHorizontal: spacing.pad },
+  blockHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  blockTitle: { fontFamily: fonts.bold, fontSize: 16, letterSpacing: -0.2, color: palette.ink },
+  link: { fontFamily: fonts.semi, fontSize: 12.5, color: palette.navy },
+
+  list: {
+    backgroundColor: palette.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: palette.line,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.md + 2,
+    minHeight: 58,
+  },
+  rowDivider: { borderTopWidth: 1, borderTopColor: palette.rule },
+  rowDate: { width: 34, alignItems: 'center' },
+  rowWeekday: {
+    fontFamily: fonts.semi,
+    fontSize: 10,
+    letterSpacing: 0.4,
+    color: palette.muted,
+    includeFontPadding: false,
+  },
+  rowDay: {
+    fontFamily: fonts.bold,
+    fontSize: 15,
+    color: palette.ink,
+    includeFontPadding: false,
+  },
+  rowBody: { flex: 1 },
+  rowTitle: { fontFamily: fonts.semi, fontSize: 14, lineHeight: 19, color: palette.ink },
+  rowMeta: { fontFamily: fonts.regular, fontSize: 11.5, color: palette.muted, marginTop: 2 },
+  rowText: { fontFamily: fonts.regular, fontSize: 12, lineHeight: 17, color: palette.muted, marginTop: 3 },
+  empty: { fontFamily: fonts.regular, fontSize: 12.5, color: palette.muted },
+
+  /* devotional */
+  devotional: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.xxl,
+    marginHorizontal: spacing.pad,
+    padding: spacing.lg,
+    borderRadius: 12,
+    backgroundColor: palette.accentSoft,
+  },
+  devotionalBody: { flex: 1 },
+  devotionalKicker: { fontFamily: fonts.medium, fontSize: 11.5, color: palette.navy },
+  devotionalTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 16.5,
+    letterSpacing: -0.2,
+    color: palette.ink,
+    marginTop: 2,
+  },
+  devotionalMeta: { fontFamily: fonts.regular, fontSize: 11.5, color: palette.accentInk, marginTop: 3 },
+  devotionalArrow: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: palette.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
-
-const nextService = null; // TypeScript satisfaction

@@ -74,10 +74,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.rule,
   },
-  title: { fontSize: typeScale.fsTitle, fontFamily: fonts.serif, color: palette.ink, letterSpacing: -0.2 },
+  title: {
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: -0.5,
+    fontFamily: fonts.bold,
+    color: palette.ink,
+  },
   inner: { paddingHorizontal: spacing.pad, paddingBottom: spacing.xxxxl, gap: spacing.gap },
   tabs: {
     flexDirection: 'row',

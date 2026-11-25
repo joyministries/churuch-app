@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: typeScale.xs, fontFamily: fonts.semi, color: palette.muted, letterSpacing: 1.6 },
   title: {
     fontSize: 42,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.6,
     lineHeight: 46,

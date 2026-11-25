@@ -92,7 +92,7 @@ function MinistriesStack() {
         headerShadowVisible: false,
         headerStyle: { backgroundColor: palette.canvas },
         headerTintColor: palette.ink,
-        headerTitleStyle: { fontFamily: fonts.serif, fontSize: 21, color: palette.ink },
+        headerTitleStyle: { fontFamily: fonts.heading, fontSize: 21, color: palette.ink },
         cardStyle: { backgroundColor: palette.canvas },
       }}
     >
@@ -119,7 +119,7 @@ function HomeStack() {
         headerShadowVisible: false,
         headerStyle: { backgroundColor: palette.canvas },
         headerTintColor: palette.ink,
-        headerTitleStyle: { fontFamily: fonts.serif, fontSize: 21, color: palette.ink },
+        headerTitleStyle: { fontFamily: fonts.heading, fontSize: 21, color: palette.ink },
         cardStyle: { backgroundColor: palette.canvas },
       }}
     >

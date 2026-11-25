@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 42,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.6,
     lineHeight: 46,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   name: {
     fontSize: 20,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.2,
     lineHeight: 23,

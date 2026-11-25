@@ -136,10 +136,13 @@ export const fonts = {
   semi: 'Plus Jakarta Sans SemiBold',
   bold: 'Plus Jakarta Sans Bold',
   extra: 'Plus Jakarta Sans ExtraBold',
-  serif: 'Instrument Serif',
+  /* Headings are the same family as the body — one voice, weight does the work.
+     The serif is kept only so old style objects resolve; nothing should use it. */
+  heading: 'Plus Jakarta Sans Bold',
+  serif: 'Plus Jakarta Sans Bold',
   body: 'Plus Jakarta Sans',
   bodySemi: 'Plus Jakarta Sans SemiBold',
-  display: 'Instrument Serif',
+  display: 'Plus Jakarta Sans Bold',
   mono: 'Courier New',
 };
 

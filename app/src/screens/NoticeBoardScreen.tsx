@@ -142,8 +142,6 @@ const styles = StyleSheet.create({
     fontSize: typeScale.xs,
     fontFamily: fonts.semi,
     color: palette.muted,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
     marginBottom: spacing.md,
   },
 
@@ -168,7 +166,7 @@ const styles = StyleSheet.create({
   date: { fontSize: typeScale.xs, fontFamily: fonts.medium, color: palette.muted },
   title: {
     fontSize: 21,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.2,
     lineHeight: 26,
@@ -208,7 +206,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 24,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.2,
     marginBottom: spacing.sm,

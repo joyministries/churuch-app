@@ -70,17 +70,15 @@ const variants = {
 };
 
 const sizes = {
-  sm: { py: 7, px: 13, h: 32, fs: 10 },
-  md: { py: 10, px: 18, h: 40, fs: 11 },
-  lg: { py: 13, px: 22, h: 48, fs: 12 },
+  sm: { py: 7, px: 13, h: 34, fs: 12.5 },
+  md: { py: 10, px: 18, h: 42, fs: 13.5 },
+  lg: { py: 13, px: 22, h: 50, fs: 15 },
 };
 
 const styles = StyleSheet.create({
   base: { alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
   label: {
-    lineHeight: 15,
-    letterSpacing: 1.3,
-    textTransform: 'uppercase',
+    lineHeight: 18,
     textAlign: 'center',
     includeFontPadding: false,
   },

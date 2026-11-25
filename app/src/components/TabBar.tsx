@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'transparent',
   },
   tabActive: { borderTopColor: palette.navy },
-  label: { fontSize: 9, fontFamily: fonts.medium, color: palette.muted, letterSpacing: 0.8 },
-  labelActive: { color: palette.navy, fontFamily: fonts.bold },
+  label: { fontSize: 10, fontFamily: fonts.medium, color: palette.muted },
+  labelActive: { color: palette.navy, fontFamily: fonts.semi },
 });
 
 export default TabBar;

@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   kicker: { fontSize: typeScale.xs, fontFamily: fonts.semi, color: palette.muted, letterSpacing: 1.6 },
   pageTitle: {
     fontSize: 42,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.6,
     lineHeight: 46,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.lg,
   },
-  emptyTitle: { fontSize: 24, fontFamily: fonts.serif, color: palette.ink, marginBottom: spacing.sm },
+  emptyTitle: { fontSize: 24, fontFamily: fonts.heading, color: palette.ink, marginBottom: spacing.sm },
   emptyBody: {
     fontSize: typeScale.md,
     fontFamily: fonts.regular,

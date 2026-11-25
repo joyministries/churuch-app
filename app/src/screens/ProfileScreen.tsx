@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   hero: { padding: spacing.lg, marginBottom: spacing.xxl },
   heroTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   heroText: { flex: 1 },
-  name: { fontSize: 30, fontFamily: fonts.serif, color: palette.ink, letterSpacing: -0.3, lineHeight: 34 },
+  name: { fontSize: 30, fontFamily: fonts.heading, color: palette.ink, letterSpacing: -0.3, lineHeight: 34 },
   rolePill: {
     alignSelf: 'flex-start',
     alignItems: 'center',

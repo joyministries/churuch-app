@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   introTitle: {
     fontSize: 30,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.3,
     lineHeight: 33,
@@ -277,11 +277,9 @@ const styles = StyleSheet.create({
   },
   dayLine: { flex: 1, height: 1, backgroundColor: palette.line },
   day: {
-    fontSize: 9,
-    fontFamily: fonts.semi,
+    fontSize: 11,
+    fontFamily: fonts.medium,
     color: palette.muted,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
     includeFontPadding: false,
   },
 
@@ -308,7 +306,7 @@ const styles = StyleSheet.create({
   clock: { fontSize: 9, fontFamily: fonts.medium, color: palette.muted, marginTop: 4 },
 
   emptyWrap: { alignItems: 'center', paddingVertical: spacing.xxxl },
-  emptyTitle: { fontSize: 22, fontFamily: fonts.serif, color: palette.ink, marginBottom: spacing.xs },
+  emptyTitle: { fontSize: 22, fontFamily: fonts.heading, color: palette.ink, marginBottom: spacing.xs },
   emptyBody: {
     fontSize: typeScale.sm,
     fontFamily: fonts.regular,

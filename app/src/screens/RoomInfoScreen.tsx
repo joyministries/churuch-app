@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
     includeFontPadding: false,
   },
-  name: { fontSize: 32, fontFamily: fonts.serif, color: palette.ink, letterSpacing: -0.4, lineHeight: 36 },
+  name: { fontSize: 32, fontFamily: fonts.heading, color: palette.ink, letterSpacing: -0.4, lineHeight: 36 },
   description: {
     fontSize: typeScale.md,
     fontFamily: fonts.regular,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   heroStat: { flex: 1, alignItems: 'center', gap: 2 },
   heroStatValue: {
     fontSize: 22,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.2,
     lineHeight: 26,

@@ -9,26 +9,25 @@ interface SectionProps {
   children: React.ReactNode;
   style?: ViewStyle;
   action?: React.ReactNode;
-  /** Optional index shown before the label, e.g. "02". */
+  /** Retained for call sites that still pass one; no longer drawn. */
   index?: string;
 }
 
 /**
- * Editorial section header: a small caps label, then a hairline that runs to the
- * action. The rule is what makes the page read as laid out rather than stacked.
+ * A section is a heading and its content. No rule, no caps, no numbering —
+ * the heading is simply bolder than the body it introduces.
  */
-export function Section({ title, children, style, action, index }: SectionProps) {
+export function Section({ title, children, style, action }: SectionProps) {
   return (
     <View style={[styles.section, style]}>
       {(title || action) && (
         <View style={styles.head}>
-          {index ? <Text style={styles.index}>{index}</Text> : null}
           {title ? (
             <Text style={styles.label} numberOfLines={1}>
-              {title.toUpperCase()}
+              {title}
             </Text>
           ) : null}
-          <View style={styles.rule} />
+          <View style={styles.spacer} />
           {action ?? null}
         </View>
       )}
@@ -38,33 +37,20 @@ export function Section({ title, children, style, action, index }: SectionProps)
 }
 
 const styles = StyleSheet.create({
-  section: { marginBottom: spacing.gap },
+  section: { marginBottom: spacing.xxl },
   head: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
-  index: {
-    fontFamily: fonts.mono,
-    fontSize: 9,
-    lineHeight: 14,
-    color: palette.muted,
-    letterSpacing: 0.6,
-  },
   label: {
-    fontFamily: fonts.semi,
-    fontSize: 10,
-    lineHeight: 14,
-    letterSpacing: 1.7,
-    color: palette.muted,
+    fontFamily: fonts.bold,
+    fontSize: 16,
+    letterSpacing: -0.2,
+    color: palette.ink,
   },
-  rule: {
-    flex: 1,
-    height: StyleSheet.hairlineWidth * 2,
-    backgroundColor: palette.border,
-    marginTop: 1,
-  },
+  spacer: { flex: 1 },
 });
 
 export default Section;

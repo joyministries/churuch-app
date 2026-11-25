@@ -37,7 +37,7 @@ export function Field({ label, placeholder, value, onChangeText, multiline, secu
 
 const styles = StyleSheet.create({
   wrap: { marginBottom: spacing.md },
-  label: { fontSize: typeScale.fsSmall, fontFamily: fonts.semi, color: palette.muted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.4 },
+  label: { fontSize: typeScale.md, fontFamily: fonts.semi, color: palette.muted, marginBottom: 4 },
   input: {
     backgroundColor: palette.surface,
     borderRadius: radius.control,

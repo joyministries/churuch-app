@@ -9,7 +9,6 @@ import {
   PlusJakartaSans_700Bold,
   PlusJakartaSans_800ExtraBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
-import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
 import { EMBEDDED_FONTS } from '../lib/embeddedFonts';
 
 const ThemeContext = createContext<any>(null);
@@ -40,7 +39,6 @@ const TEXT_FONTS = {
   'Plus Jakarta Sans SemiBold': PlusJakartaSans_600SemiBold,
   'Plus Jakarta Sans Bold': PlusJakartaSans_700Bold,
   'Plus Jakarta Sans ExtraBold': PlusJakartaSans_800ExtraBold,
-  'Instrument Serif': InstrumentSerif_400Regular,
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

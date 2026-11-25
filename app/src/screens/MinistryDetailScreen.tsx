@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 38,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.heading,
     color: palette.ink,
     letterSpacing: -0.4,
     lineHeight: 42,
