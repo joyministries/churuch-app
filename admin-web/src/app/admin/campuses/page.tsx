@@ -7,7 +7,8 @@ import { MapPin, Plus, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export default function CampusesPage() {
-  const { data: campuses, mutate } = useSWR<Campus[]>('/admin/campuses', () => api.get('/admin/campuses'));
+  const { data, mutate } = useSWR<Campus[]>('/admin/campuses', () => api.get('/admin/campuses'));
+  const campuses = data?.data ?? data ?? [];
   const [editing, setEditing] = useState<Campus | null>(null);
   const [form, setForm] = useState({ name: '', slug: '', address: '', service_times: '', phone: '', is_primary: false });
 
@@ -53,7 +54,7 @@ export default function CampusesPage() {
           <p className="text-gray-500">Manage church campus locations</p>
         </div>
         <button
-          onClick={() => setForm({ name: '', slug: '', address: '', service_times: '', phone: '', is_primary: false }); setEditing(null)}
+          onClick={() => { setForm({ name: '', slug: '', address: '', service_times: '', phone: '', is_primary: false }); setEditing(null); }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium flex items-center gap-2"
         >
           <Plus size={18} />
@@ -61,7 +62,7 @@ export default function CampusesPage() {
         </button>
       </div>
 
-      {(false as any[]).map((campus) => (
+      {campuses.map((campus) => (
         <div key={campus.id} className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -72,7 +73,7 @@ export default function CampusesPage() {
               <button onClick={() => handleEdit(campus)} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700">
                 Edit
               </button>
-              <button onClick={() => {}} className="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 rounded-lg text-red-700">
+              <button onClick={() => handleDelete(campus.id)} className="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 rounded-lg text-red-700">
                 Delete
               </button>
             </div>
@@ -80,7 +81,7 @@ export default function CampusesPage() {
         </div>
       ))}
 
-      {(editing || false) && (
+      {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">{editing ? 'Edit Campus' : 'Add Campus'}</h2>

@@ -20,7 +20,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
