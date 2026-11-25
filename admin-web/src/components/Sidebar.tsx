@@ -24,7 +24,7 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <>
+    <div>
       <button
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border rounded-lg shadow"
         onClick={() => setMobileOpen(true)}
@@ -105,6 +105,6 @@ export default function Sidebar() {
           aria-hidden="true"
         />
       )}
-    </>
+    </div>
   );
 }
